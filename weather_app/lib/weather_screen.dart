@@ -65,9 +65,18 @@ class _WeatherScreenState extends State<WeatherScreen> {
           }
 
           final data = snapshot.data;
+          final list = data!['list'];
 
-          final temp = data?['list'][0]['main']["temp"];
-          final currentSky = data?['list'][0]['weather'][0]['main'];
+          final double temp =
+              double.parse(list[0]["main"]["temp"].toString()) - 273.15;
+          final currentSky = list[0]["weather"][0]["main"];
+          final icon = currentSky == "Clouds" || currentSky == "Rain"
+              ? Icons.cloud
+              : Icons.sunny;
+
+          final humidity = list[0]["main"]["humidity"];
+          final windSpeed = list[0]["wind"]["speed"];
+          final visibility = list[0]["visibility"];
 
           return Padding(
             padding: EdgeInsets.all(10),
@@ -90,14 +99,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
                           child: Column(
                             children: [
                               Text(
-                                "$temp K",
+                                "${temp.toStringAsFixed(0)}° C",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 32,
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              const Icon(Icons.cloud, size: 64),
+                              Icon(icon, size: 64),
                               const SizedBox(height: 16),
                               Text(
                                 "$currentSky",
@@ -116,31 +125,45 @@ class _WeatherScreenState extends State<WeatherScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 ),
                 const SizedBox(height: 7),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      const HourlyForecastItem(
-                        icon: Icons.cloud,
-                        time: "10:30",
-                        value: "320.18",
-                      ),
-                      const HourlyForecastItem(
-                        icon: Icons.sunny,
-                        time: "11:30",
-                        value: "213.89",
-                      ),
-                      const HourlyForecastItem(
-                        icon: Icons.thunderstorm,
-                        time: "12:30",
-                        value: "289.87",
-                      ),
-                      const HourlyForecastItem(
-                        icon: Icons.sunny,
-                        time: "01:30",
-                        value: "203.19",
-                      ),
-                    ],
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Row(
+                //     children: [
+                //       for (int i = 1; i <= 38; i++)
+                //         HourlyForecastItem(
+                //           icon:
+                //               list[i]["weather"][0]["main"] == "Clear" ||
+                //                   list[i]["weather"][0]["main"] == "Cloud"
+                //               ? Icons.cloud
+                //               : Icons.sunny,
+                //           time: "10:30",
+                //           value: "320.18",
+                //         ),
+                //     ],
+                //   ),
+                // ),
+                SizedBox(
+                  height: 130,
+                  child: ListView.builder(
+                    itemCount: 20,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, i) {
+                      final double temp =
+                          double.parse(list[i + 1]["main"]["temp"].toString()) -
+                          273.15;
+                      IconData icon =
+                          list[i + 1]["weather"][0]["main"] == "Clear" ||
+                              list[i + 1]["weather"][0]["main"] == "Cloud"
+                          ? Icons.cloud
+                          : Icons.sunny;
+
+                      final time = DateTime.parse(list[i + 1]["dt_txt"]);
+                      return HourlyForecastItem(
+                        icon: icon,
+                        time: '${time.hour}:${time.minute}',
+                        value: "${temp.toStringAsFixed(0)}° C",
+                      );
+                    },
                   ),
                 ),
                 SizedBox(height: 20),
@@ -152,20 +175,20 @@ class _WeatherScreenState extends State<WeatherScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    const AdditionalInfoItem(
+                    AdditionalInfoItem(
                       icon: Icons.water_drop,
                       label: "Humidity",
-                      value: "95",
+                      value: humidity.toString(),
                     ),
-                    const AdditionalInfoItem(
+                    AdditionalInfoItem(
                       icon: Icons.air,
                       label: "Wind Speed",
-                      value: "80",
+                      value: windSpeed.toString(),
                     ),
-                    const AdditionalInfoItem(
+                    AdditionalInfoItem(
                       icon: Icons.beach_access,
                       label: "Visibility",
-                      value: "90",
+                      value: visibility.toString(),
                     ),
                   ],
                 ),
